@@ -8,19 +8,22 @@ from datetime import timedelta
 Dni = ['PN', 'VT', 'SR', 'CT', 'PT', 'SB', 'ND']
 Minea = {}
 Triod = {}
-def Parse_M(text, god) :
+
+
+def Parse_M(text, god1, PS1) :
 	mes = 0
 	den = None
 	slujba = None
 	dt = None
+	ng = datetime(god1, 1, 1)
 	res = iter(re.findall(r'[A-Z\-+][A-Z0-9]+|"[^"\n]+"', text))
 	for t in res :   #new match
 		t = t.encode('utf-8')
 		t2 = t[0:2]
 		if t2 == 'DN' :
-			dt = datetime(day = int(t[2:]), month = mes, year = god) + timedelta(days=13)
-			if dt.year > god :
-				dt = datetime(day = dt.day, month = dt.month, year = god)
+			dt = datetime(day = int(t[2:]), month = mes, year = god1) + timedelta(days=13)		
+			if dt < PS1 :
+				dt = datetime(day = int(t[2:]), month = mes, year = god1 + 1) + timedelta(days=13)						
 		elif t2 == 'MS' :
 			mes = int(t[2:])
 		elif t2 in ['LT', 'VR', 'UT', 'ML', 'CH'] :					
@@ -82,9 +85,9 @@ def Parse_T(text) :
 			pass
 #		print t.decode('utf-8')
 
-def Load_M(fname, year) :
+def Load_M(fname, god1, PS1) :
 	f = open(fname)	
-	m = Parse_M(f.read().decode('utf8'), year)
+	m = Parse_M(f.read().decode('utf8'), god1, PS1)
 	f.close()
 	return m
 
@@ -94,17 +97,17 @@ def Load_T(fname) :
 	f.close()
 	return m
 
+def Init(god1, PS1) :
+	Load_M('ev_minea', god1, PS1)
+	Load_M('ap_minea', god1, PS1)
+	Load_T('ev_triod')
+	Load_T('ap_triod')
+
 def Raspisanie_Minei(date) :
-	
-	Load_M('ev_minea', date.year)
-	Load_M('ap_minea', date.year)
 	return Minea.get("%i.%i" % (date.day, date.month))
 
 def Raspisanie_Triodi(per, ned, den, sedm_po_Troici) :
 	VEV = ['MF116', 'MK70', 'MK71', 'LK112', 'LK113', 'LK114', 'IN63', 'IN64', 'IN65', 'IN66', 'IN67']
-
-	Load_T('ev_triod')
-	Load_T('ap_triod')
 	res = None
 	sedm = None
 	if per == 1 :
@@ -115,18 +118,20 @@ def Raspisanie_Triodi(per, ned, den, sedm_po_Troici) :
 		sedm = Triod.get('SDV' + str(ned))
 
 	if sedm :
-		res = sedm.get(Dni[den]).copy() 
+		dn = sedm.get(Dni[den])
+		if dn :
+			res = dn.copy() 
 
-		if Dni[den] == 'ND' and per != 1 :
-			ut = res.get('UT')		
-			if ut :
-				ev = ut.get('EV')			
-				if ev :
-					if 'VEV' in ev :
-						i = ev.index('VEV')
-						ev.pop(i)
-						evn = (sedm_po_Troici - 2) % 11
-						ev.insert(i, VEV[evn])
+			if per > 1 and Dni[den] == 'ND' :
+				ut = res.get('UT')		
+				if ut :
+					ev = ut.get('EV')			
+					if ev :
+						if 'VEV' in ev :
+							i = ev.index('VEV')
+							ev.pop(i)
+							evn = (sedm_po_Troici - 2) % 11
+							ev.insert(i, VEV[evn])
 
 	return res
 
