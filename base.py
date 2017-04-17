@@ -106,16 +106,16 @@ def Init(god1, PS1) :
 def Raspisanie_Minei(date) :
 	return Minea.get("%i.%i" % (date.day, date.month))
 
-def Raspisanie_Triodi(per, ned, den, sedm_po_Troici) :
+def Raspisanie_Triodi(per, sdm, den, sedm_po_Troici) :
 	VEV = ['MF116', 'MK70', 'MK71', 'LK112', 'LK113', 'LK114', 'IN63', 'IN64', 'IN65', 'IN66', 'IN67']
 	res = None
 	sedm = None
 	if per == 1 :
-		sedm = Triod.get('SDP' + str(ned))
+		sedm = Triod.get('SDP' + str(sdm))
 	elif per == 2 or per == 3 :
-		sedm = Triod.get('SDT' + str(ned))
+		sedm = Triod.get('SDT' + str(sdm))
 	elif per == 4 :		
-		sedm = Triod.get('SDV' + str(ned))
+		sedm = Triod.get('SDV' + str(sdm))
 
 	if sedm :
 		dn = sedm.get(Dni[den])

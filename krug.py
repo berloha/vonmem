@@ -86,7 +86,6 @@ def Mf(sedm_Tr, den_sedm) :
 
 def Lk(sedm_Tr, den_sedm) :
 	sedm = sedm_Tr + Sdvig_Luka
-	sedm = sedm_Tr
 	if date >= Lk_Ots :
 		sedm -= Lk_Ots_sdvig
 		if Lk_Ots_sdvig == 5 :    #[30, 31, 17, 32, 33]
@@ -150,3 +149,39 @@ print SD(ned_28_Tr)
 print SD(ned_29_Tr)
 print SD(ned_praotec)
 #print Get_TM(date)
+
+
+def Process(dst, src, mask, replace) :
+	for k in src.keys() :
+		if type(src[k]) is list :
+			flag = 0
+			if mask :
+				if k in mask :	
+					flag = 1
+			else :
+				flag = 1
+
+			if flag :
+				if type(dst.get(k)) is not list :
+					dst[k] = []
+				if replace :	
+					dst[k] = src[k]
+				else :
+					dst[k] += src[k]
+
+		if type(src[k]) is dict :
+			if type(dst.get(k)) is not dict :				
+				dst[k] = {}
+			Process(dst[k], src[k], mask, replace)
+
+
+
+
+src = Krug[SD(date)]['Tr']
+dst = Krug[SD(date)]['Mn']
+print src
+print dst
+mask = []
+Process(dst, src, mask, 0)
+print src
+print dst
