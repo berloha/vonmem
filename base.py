@@ -2,6 +2,7 @@
 #coding: utf8
 import re
 import sys
+import copy
 from datetime import datetime  
 from datetime import timedelta 
 
@@ -85,6 +86,35 @@ def Parse_T(text) :
 			pass
 #		print t.decode('utf-8')
 
+def Process(src, dst, mask, replace) :
+
+	if type(src) is not dict : return
+	if type(dst) is not dict : 
+		dst = {} 
+
+	for k in src.keys() :
+		if type(src[k]) is list :
+			flag = 0
+			if mask :
+				if k in mask :	
+					flag = 1
+			else :
+				flag = 1
+
+			if flag :
+				if replace :	
+					dst[k] = src[k]
+				else :
+					if type(dst.get(k)) is not list :
+						dst[k] = src[k]
+					else :
+						dst[k] += src[k]
+
+		if type(src[k]) is dict :
+			if type(dst.get(k)) is not dict :				
+				dst[k] = {}
+			Process(src[k], dst[k], mask, replace)
+
 def Load_M(fname, god1, PS1) :
 	f = open(fname)	
 	m = Parse_M(f.read().decode('utf8'), god1, PS1)
@@ -119,8 +149,18 @@ def Raspisanie_Triodi(per, sdm, den, sedm_po_Troici) :
 
 	if sedm :
 		dn = sedm.get(Dni[den])
+
 		if dn :
-			res = dn.copy() 
+			res = copy.deepcopy(dn)
+	
+			if per == 2 or per == 3 :
+				if sdm != sedm_po_Troici :
+#					print '>>>', sedm_po_Troici
+					sdm_ap = Triod.get('SDT' + str(sedm_po_Troici))
+					if sdm_ap :
+						dn_ap = sdm_ap.get(Dni[den])
+						Process(dn_ap, res, ['AP'], 1)
+
 
 			if per > 1 and Dni[den] == 'ND' :
 				ut = res.get('UT')		
