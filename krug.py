@@ -5,6 +5,7 @@ import sys
 from datetime import datetime  
 from datetime import timedelta 
 import base
+import copy
 
 Dni = [u'Пн', u'Вт', u'Cр', u'Чт', u'Пт', u'Сб', u'Вс']
 data_format = '%d.%m.%Y'
@@ -139,29 +140,55 @@ while dt < PS2 :
 
 print Krug[SD(date)]
 
-#1. Евангельское зачало Недели 28-й и апостольское зачало Недели 29-й 
-#читаются в Неделю святых праотец, поэтому они меняются местами с соответствующими 
-#рядовым чтениями той Недели, на которую придется в данном году Неделя святых праотец.
+zapas = []
+dt = PS1
+while dt < PS2 :	
+	tr = Krug[SD(dt)].get('Tr')
+	mn = Krug[SD(dt)].get('Mn')
+	if tr and mn :
+		tr_f = tr.get('ADD')
+		mn_f = mn.get('ADD')
 
-ned_28_Tr = Troica + timedelta(weeks = 28)
-ned_29_Tr = Troica + timedelta(weeks = 29)
-ned_praotec = datetime(god1 + 1, 1, 7)
-while True :
-	ned_praotec -= timedelta(days = 1)      
-	if (ned_praotec.weekday() == 6) : break #первое Вс до Рождества 
-while True :
-	ned_praotec -= timedelta(days = 1)      
-	if (ned_praotec.weekday() == 6) : break #второе Вс до Рождества
+		if mn_f :
+			if 'IZEV28' in mn_f :
+				ned_28_Tr = Troica + timedelta(weeks = 28)			
+				tr28 = Krug[SD(ned_28_Tr)].setdefault('Tr', {})
+				tr28lt = tr28.setdefault('LT', {})
+				trlt = tr.setdefault('LT', {})
+				base.Perestanovka(trlt, tr28lt, ['EV'], 1)
+				tr28.setdefault('ADD', []).append('MD-IZEV28')
+				
+			if 'IZAP29' in mn_f :
+				ned_29_Tr = Troica + timedelta(weeks = 29)
+				tr29 = Krug[SD(ned_29_Tr)].setdefault('Tr', {})
+				tr29lt = tr28.setdefault('LT', {})
+				trlt = tr.setdefault('LT', {})
+				base.Perestanovka(trlt, tr29lt, ['AP'], 1)
+				tr29.setdefault('ADD', []).append('MD-IZAP29')
 
-print SD(ned_28_Tr)
-print SD(ned_29_Tr)
-print SD(ned_praotec)
-#print Get_TM(date)
+			if 'IZR' in mn_f :
+				trlt = tr.get('LT')
+				if trlt : zapas.append(trlt)
+				tr['LT'] = {}
+				tr.setdefault('ADD', []).append('MD-IZR')
 
+			if 'IZO' in mn_f :
+				if Lk_Ots_sdvig :
+					trlt = tr.get('LT')
+					if trlt : zapas.append(trlt)
+					tr['LT'] = {}
+					tr.setdefault('ADD', []).append('MD-IZO')
+					print dt
 
+#			print dt
+			print tr_f, mn_f
+#			print mn
 
+			
+	dt += timedelta(days = 1)
 
-
+print Krug[SD(date)]
+print zapas
 
 #src = Krug[SD(date)]['Tr']
 #dst = Krug[SD(date)]['Mn']

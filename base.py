@@ -31,24 +31,25 @@ def Parse_M(text, god1, PS1) :
 			den = Minea.setdefault("%i.%i" % (dt.day, dt.month), {})
 			slujba = den.setdefault(t, {})
 		elif t2 in ['MF','MK','LK','IN'] :
-			ev = slujba.setdefault('EV', [])
-			ev.append(t)
+			slujba.setdefault('EV', []).append(t)
 		elif t2 == 'ZA' :						
 			den = Minea.setdefault("%i.%i" % (dt.day, dt.month), {})
 			slujba = den.setdefault('LT', {})			
-			ap = slujba.setdefault('AP', [])
-			ap.append(t)
+			slujba.setdefault('AP', []).append(t)
 		if t[0] == '-' or t[0] == '+' :
 			if t[1:] in Dni :
 				while Dni[dt.weekday()] != t[1:] :
 					if t[0] == '-' :
 						dt -= timedelta(days = 1)
 					else :
-						dt += timedelta(days = 1)
+						dt += timedelta(days = 1)				
+			if t[1:] == 'ND' :
+				Minea.setdefault("%i.%i" % (dt.day, dt.month), {}).setdefault('ADD', []).append('ND!')			
+
+			
 		elif t2 == 'IZ' or t2 == 'ZS':
 			den = Minea.setdefault("%i.%i" % (dt.day, dt.month), {})
-			add = den.setdefault('ADD', [])
-			add.append(t)			
+			den.setdefault('ADD', []).append(t)			
 			pass
 		else :
 			pass
@@ -74,19 +75,17 @@ def Parse_T(text) :
 			slujba = den.setdefault(t, {})
 		elif t2 == 'ZA' :
 			if slujba == None : slujba = den.setdefault('LT', {})
-			ap = slujba.setdefault('AP', [])
-			ap.append(t)
+			slujba.setdefault('AP', []).append(t)
 		elif t2 in ['MF','MK','LK','IN', 'VE'] :
 			if slujba == None : slujba = den.setdefault('LT', {})
-			ev = slujba.setdefault('EV', [])
-			ev.append(t)
-		elif t2 == 'ZS' :
-			pass
+			slujba.setdefault('EV', []).append(t)
+		elif t2 == 'IZ' or t2 == 'ZS':
+			den.setdefault('ADD', []).append(t)			
 		else :
 			pass
-#		print t.decode('utf-8')
+	#		print t.decode('utf-8')
 
-def Process(src, dst, mask, replace) :
+def Perestanovka(src, dst, mask, replace) :
 
 	if type(src) is not dict : return
 	if type(dst) is not dict : 
@@ -113,7 +112,7 @@ def Process(src, dst, mask, replace) :
 		if type(src[k]) is dict :
 			if type(dst.get(k)) is not dict :				
 				dst[k] = {}
-			Process(src[k], dst[k], mask, replace)
+			Perestanovka(src[k], dst[k], mask, replace)
 
 def Load_M(fname, god1, PS1) :
 	f = open(fname)	
@@ -159,7 +158,7 @@ def Raspisanie_Triodi(per, sdm, den, sedm_po_Troici) :
 					sdm_ap = Triod.get('SDT' + str(sedm_po_Troici))
 					if sdm_ap :
 						dn_ap = sdm_ap.get(Dni[den])
-						Process(dn_ap, res, ['AP'], 1)
+						Perestanovka(dn_ap, res, ['AP'], 1)
 
 
 			if per > 1 and Dni[den] == 'ND' :
