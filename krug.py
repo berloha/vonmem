@@ -10,7 +10,10 @@ import copy
 Dni = [u'Пн', u'Вт', u'Cр', u'Чт', u'Пт', u'Сб', u'Вс']
 data_format = '%d.%m.%Y'
 date = datetime.strptime('24.12.2017', data_format)
-if len(sys.argv) > 1 : date = datetime.strptime(sys.argv[1], data_format)
+try :
+	if len(sys.argv) > 1 : date = datetime.strptime(sys.argv[1], data_format)
+except ValueError:
+	date = datetime.strptime(sys.argv[1], '%Y-%m-%d')
 
 def SD(d) :
 	return d.strftime('%d.%m.%Y')
@@ -181,7 +184,7 @@ while dt < PS2 :
 					print dt
 
 #			print dt
-			print tr_f, mn_f
+			#print tr_f, mn_f
 #			print mn
 
 			

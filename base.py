@@ -20,11 +20,15 @@ def Parse_M(text, god1, PS1) :
 	res = iter(re.findall(r'[A-Z\-+][A-Z0-9]+|"[^"\n]+"', text))
 	for t in res :   #new match
 		t = t.encode('utf-8')
+		if dt == datetime(2016, 1, 2) : print t
 		t2 = t[0:2]
 		if t2 == 'DN' :
 			dt = datetime(day = int(t[2:]), month = mes, year = god1) + timedelta(days=13)		
 			if dt < PS1 :
 				dt = datetime(day = int(t[2:]), month = mes, year = god1 + 1) + timedelta(days=13)						
+			den = Minea.setdefault("%i.%i" % (dt.day, dt.month), {})
+			slujba = den.setdefault('LT', {})
+
 		elif t2 == 'MS' :
 			mes = int(t[2:])
 		elif t2 in ['LT', 'VR', 'UT', 'ML', 'CH'] :					
@@ -33,8 +37,6 @@ def Parse_M(text, god1, PS1) :
 		elif t2 in ['MF','MK','LK','IN'] :
 			slujba.setdefault('EV', []).append(t)
 		elif t2 == 'ZA' :						
-			den = Minea.setdefault("%i.%i" % (dt.day, dt.month), {})
-			slujba = den.setdefault('LT', {})			
 			slujba.setdefault('AP', []).append(t)
 		if t[0] == '-' or t[0] == '+' :
 			if t[1:] in Dni :
@@ -43,14 +45,11 @@ def Parse_M(text, god1, PS1) :
 						dt -= timedelta(days = 1)
 					else :
 						dt += timedelta(days = 1)				
-			if t[1:] == 'ND' :
-				Minea.setdefault("%i.%i" % (dt.day, dt.month), {}).setdefault('ADD', []).append('ND!')			
 
-			
-		elif t2 == 'IZ' or t2 == 'ZS':
 			den = Minea.setdefault("%i.%i" % (dt.day, dt.month), {})
+			slujba = den.setdefault('LT', {})			
+		elif t2 == 'IZ' or t2 == 'ZS':
 			den.setdefault('ADD', []).append(t)			
-			pass
 		else :
 			pass
 
