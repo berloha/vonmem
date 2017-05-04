@@ -17,15 +17,16 @@ def Parse_M(text, god1, PS1) :
 	slujba = None
 	dt = None
 	ng = datetime(god1, 1, 1)
+	dD = (god1 - god1 % 100)/100 - (god1 - god1 % 400)/400 - 2
 	res = iter(re.findall(r'[A-Z\-+][A-Z0-9]+|"[^"\n]+"', text))
 	for t in res :   #new match
 		t = t.encode('utf-8')
 		if dt == datetime(2016, 1, 2) : print t
 		t2 = t[0:2]
 		if t2 == 'DN' :
-			dt = datetime(day = int(t[2:]), month = mes, year = god1) + timedelta(days=13)		
+			dt = datetime(day = int(t[2:]), month = mes, year = god1) + timedelta(days=dD)		
 			if dt < PS1 :
-				dt = datetime(day = int(t[2:]), month = mes, year = god1 + 1) + timedelta(days=13)						
+				dt = datetime(day = int(t[2:]), month = mes, year = god1 + 1) + timedelta(days=dD)						
 			den = Minea.setdefault("%i.%i" % (dt.day, dt.month), {})
 			slujba = den.setdefault('LT', {})
 

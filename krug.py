@@ -10,10 +10,16 @@ import copy
 Dni = [u'Пн', u'Вт', u'Cр', u'Чт', u'Пт', u'Сб', u'Вс']
 data_format = '%d.%m.%Y'
 date = datetime.strptime('24.12.2017', data_format)
-try :
-	if len(sys.argv) > 1 : date = datetime.strptime(sys.argv[1], data_format)
-except ValueError:
-	date = datetime.strptime(sys.argv[1], '%Y-%m-%d')
+if len(sys.argv) > 1 : 
+	try :
+		date = datetime.strptime(sys.argv[1], data_format)
+	except ValueError:
+		try :
+			date = datetime.strptime(sys.argv[1], '%Y-%m-%d')
+		except ValueError:
+		    date = datetime.strptime(sys.argv[1], '%d.%m.%y')
+
+dD = (date.year - date.year % 100)/100 - (date.year - date.year % 400)/400 - 2
 
 def SD(d) :
 	return d.strftime('%d.%m.%Y')
@@ -24,10 +30,12 @@ def Paskha(y) :
 	c = y % 7
 	d = (19 * a + 15) % 30 
 	d += (2 * b + 4 * c + 6 * d + 6) % 7
-	if d < 9 :
-		return datetime(y, 3, 22 + d) + timedelta(days=13)
+	if d <= 9 :
+		return datetime(y, 3, 22 + d) + timedelta(days=dD)
 	else :
-		return datetime(y, 4, d - 9) + timedelta(days=13)
+		print y
+		print d
+		return datetime(y, 4, d - 9) + timedelta(days=dD)
 
 den_mes = date.day
 mes = date.month
@@ -122,6 +130,22 @@ def Get_TM(dt) :
 	mn = base.Raspisanie_Minei(dt)
 	return (tr, mn)
 
+def PD(d, depth = 0) :
+	if not d : return 
+	if type(d) is dict :
+		for k in d.keys() :
+			if type(d[k]) is dict :
+				print "%s%s" % ('  ' * depth, k)
+			else :
+				print "%s%s:" % ('  ' * depth, k),
+			PD(d[k], depth + 1)
+	if type(d) is list :
+		s = ''
+		for e in d :
+			if len(s) : s += ', '
+			s += str(e)
+		print s
+
 base.Init(god1, PS1)
 dt = PS1
 Krug = {}
@@ -141,7 +165,7 @@ while dt < PS2 :
 		Krug[SD(dt)]['Mn'] = mn	
 	dt += timedelta(days = 1)
 
-print Krug[SD(date)]
+PD(Krug[SD(date)])
 
 zapas = []
 dt = PS1
@@ -158,16 +182,20 @@ while dt < PS2 :
 				tr28 = Krug[SD(ned_28_Tr)].setdefault('Tr', {})
 				tr28lt = tr28.setdefault('LT', {})
 				trlt = tr.setdefault('LT', {})
-				base.Perestanovka(trlt, tr28lt, ['EV'], 1)
-				tr28.setdefault('ADD', []).append('MD-IZEV28')
+				if tr28 != tr :
+					print "ned28ev", SD(ned_28_Tr)
+					base.Perestanovka(trlt, tr28lt, ['EV'], 1)
+					tr28.setdefault('ADD', []).append('MD-IZEV28')
 				
 			if 'IZAP29' in mn_f :
 				ned_29_Tr = Troica + timedelta(weeks = 29)
 				tr29 = Krug[SD(ned_29_Tr)].setdefault('Tr', {})
 				tr29lt = tr28.setdefault('LT', {})
 				trlt = tr.setdefault('LT', {})
-				base.Perestanovka(trlt, tr29lt, ['AP'], 1)
-				tr29.setdefault('ADD', []).append('MD-IZAP29')
+				if tr29 != tr :
+					print "ned29ap", SD(ned_29_Tr)
+					base.Perestanovka(trlt, tr29lt, ['AP'], 1)
+					tr29.setdefault('ADD', []).append('MD-IZAP29')
 
 			if 'IZR' in mn_f :
 				trlt = tr.get('LT')
@@ -190,14 +218,7 @@ while dt < PS2 :
 			
 	dt += timedelta(days = 1)
 
-print Krug[SD(date)]
+PD(Krug[SD(date)])
 print zapas
 
-#src = Krug[SD(date)]['Tr']
-#dst = Krug[SD(date)]['Mn']
-#print src
-#print dst
-#mask = []
-#base.Process(src, dst, mask, 0)
-#print src
-#print dst
+print SD(date)
